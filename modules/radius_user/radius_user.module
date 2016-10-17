@@ -253,17 +253,17 @@ function radius_user_radius_db_save($profile, $account) {
   else {
     db_set_active('radius');
     try {
-      $id = db_insert('userinfo')
-      ->fields(array(
-        'UserName' => $account->name,
-        'Name' => $profile->profile_name['und'][0]['value'],
-        'Mail' => $account->mail,
-        'Mobile' => $profile->profile_phone['und'][0]['value'],
-        'add_date' => date('Y-m-d H:i:s'),
-        'blocked' => $profile->profile_active['und'][0]['value'],
-        'note' => $profile->profile_comment['und'][0]['value'],
-      ))
-      ->execute();
+      //$id = db_insert('userinfo')
+      //->fields(array(
+      //  'UserName' => $account->name,
+      //  'Name' => $profile->profile_name['und'][0]['value'],
+      //  'Mail' => $account->mail,
+      //  'Mobile' => $profile->profile_phone['und'][0]['value'],
+      //  'add_date' => date('Y-m-d H:i:s'),
+      //  'blocked' => $profile->profile_active['und'][0]['value'],
+      //  'note' => $profile->profile_comment['und'][0]['value'],
+      //))
+      //->execute();
       $id = db_insert('radcheck')
       ->fields(array(
         'username' => $account->name,

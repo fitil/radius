@@ -7,7 +7,8 @@ function radius_user_menu() {
     'description' => 'Add new radius User',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('radius_user_add_form'),
-    'access callback' => TRUE,
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
     'menu_name' => 'user-menu',
     );
   $items ['radius/user/sync'] = array(
@@ -15,7 +16,8 @@ function radius_user_menu() {
     'description' => 'Synchronization Radius users',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('radius_user_synchronization'),
-    'access callback' => TRUE,
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
     'menu_name' => 'user-menu',
     );
   return $items;

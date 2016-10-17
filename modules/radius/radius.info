@@ -1,0 +1,4 @@
+name = Radius Neocm
+description = Neocm Radius Billing system.
+package = Fitil
+core = 7.x

@@ -1,0 +1,346 @@
+<?php
+
+function radius_user_menu() {
+  $items = array();
+  $items ['radius/user/add'] = array(
+    'title' => 'Add New User',
+    'description' => 'Add new radius User',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('radius_user_add_form'),
+    'access callback' => TRUE,
+    'menu_name' => 'user-menu',
+    );
+  $items ['radius/user/sync'] = array(
+    'title' => t('Synchronization'),
+    'description' => 'Synchronization Radius users',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('radius_user_synchronization'),
+    'access callback' => TRUE,
+    'menu_name' => 'user-menu',
+    );
+  return $items;
+}
+
+function radius_user_synchronization() {
+  db_set_active('radius');
+  $result_user = db_select('userinfo', 'n')
+  ->fields('n')
+  ->execute()
+  ->fetchAll();
+  db_set_active('default');
+
+  foreach ($result_user as $record) {
+    if (empty(user_load_by_name($record->UserName))) {
+      dpm($record);
+      db_set_active('radius');
+      $result_pass = db_select('radcheck', 'r')
+        ->fields('r')
+        ->condition('r.username', $record->UserName)
+        ->execute()
+        ->fetchObject();
+      dpm($result_pass);
+      db_set_active('default');
+      /////////////////////////////////////////////////////
+      ///Добавляем пользователей из радиуса в базу Drupal
+      /////////////////////////////////////////////////////
+      $fields = array(
+        'name' => $record->UserName,
+        'mail' => $record->Mail,
+        'pass' => $result_pass->value,
+
+        'status' => 1,
+        'init' => $record->Mail,
+        'roles' => array(
+          DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+          3 => 'Radius User',
+        ),
+      );
+      $account = user_save('', $fields);
+
+      $profile = profile2_load_by_user($account->uid, 'user_profile');
+      if (empty($profile)) {
+        $profile = profile2_create(array(
+          'type' => 'user_profile',
+          'uid' => $account->uid,
+        ));
+      }
+
+      $profile->profile_password['und'][0]['value'] = $result_pass->value;
+      $profile->profile_name['und'][0]['value'] = $record->Name;
+      $profile->profile_email['und'][0]['value'] = $record->Mail;
+      $profile->profile_phone['und'][0]['value'] = $record->WorkPhone;
+      $profile->profile_comment['und'][0]['value'] = $record->note;
+      $profile->profile_payment_method['und'][0]['value'] = 1;
+      $profile->field_balance['und'][0]['value'] = 2;
+      $profile->field_off_threshold['und'][0]['value'] = 0;
+      $profile->profile_active['und'][0]['value'] = 1;
+      $profile->field__last_withdrawal['und'][0]['value'] = date('Y-m-d H:i:s');
+      profile2_save($profile);
+
+    }
+  }
+}
+
+//function radius_user_user_view($account, $view_mode, $langcode) {
+//  $profile = profile2_load_by_user($account->uid, 'user_profile');
+//  dpm($profile);
+//  //$output = shell_exec('ls');
+// // //dpm($output);
+//}
+
+function radius_user_form_alter(&$form, &$form_state, $form_id) {
+  //dpm($form);
+}
+
+function radius_user_add_form($form, $form_state) {
+  $form = array();
+  $form['agreement'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Agreement'),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#required' => TRUE,
+    );
+  $form['radius_login'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Login'),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#required' => TRUE,
+    '#attributes' => array('autocomplete' => 'off'),
+    );
+  $form['email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User EMail'),
+    '#required' => TRUE,
+    );
+  $form['radius_password'] = array(
+    '#type' => 'password_confirm',
+    '#size' => 15,
+    );
+  $form['user'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User Info'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="radius_login"]' => array('empty' => FALSE),
+        ),
+      ),
+    );
+  $form['user']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Name'),
+    '#size' => 100,
+    '#maxlength' => 100,
+    );
+
+  $form['user']['phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Phone'),
+    '#size' => 100,
+    '#maxlength' => 100,
+    );
+  $form['user']['address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Address'),
+    '#size' => 100,
+    '#maxlength' => 100,
+    );
+  $form['user']['comment'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Comment'),
+    );
+  $form['active'] = array(
+    '#type' => 'select',
+    '#title' => t('Active'),
+    '#options' => array(
+        0 => t('Blocked'),
+        1 => t('Active'),
+      ),
+    '#default_value' => 1,
+    );
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    );
+  return $form;
+}
+
+/**
+ * Validation for radius user entity form.
+ */
+function radius_user_form_validate($form, &$form_state) {
+
+}
+
+function radius_user_add_form_submit ($form, &$form_state) {
+
+  $fields = array(
+    'name' => $form_state['values']['radius_login'],
+    'mail' => $form_state['values']['email'],
+    'pass' => $form_state['values']['radius_password'],
+
+    'status' => 1,
+    'init' => $form_state['values']['email'],
+    'roles' => array(
+      DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+      3 => 'Radius User',
+    ),
+  );
+
+  $account = user_save('', $fields);
+
+  $profile = profile2_load_by_user($account->uid, 'user_profile');
+  if(empty($profile)) {
+    $profile = profile2_create(array(
+      'type' => 'user_profile',
+      'uid' => $account->uid,
+    ));
+  }
+
+  $profile->profile_agreement['und'][0]['value'] = $form_state['values']['agreement'];
+  $profile->profile_password['und'][0]['value'] = $form_state['values']['radius_password'];
+  $profile->profile_name['und'][0]['value'] = $form_state['values']['name'];
+  $profile->profile_email['und'][0]['value'] = $form_state['values']['email'];
+  $profile->profile_phone['und'][0]['value'] = $form_state['values']['phone'];
+  $profile->profile_adress['und'][0]['value'] = $form_state['values']['address'];
+  $profile->profile_comment['und'][0]['value'] = $form_state['values']['comment'];
+  $profile->profile_payment_method['und'][0]['value'] = 1;
+  $profile->field_balance['und'][0]['value'] = 2;
+  $profile->field_off_threshold['und'][0]['value'] = 0;
+  $profile->profile_active['und'][0]['value'] = 1;
+  $profile->field__last_withdrawal['und'][0]['value'] = date('Y-m-d H:i:s');
+  profile2_save($profile);
+  rules_invoke_component('rules_minus_cash_if', $profile->pid);
+  //dpm($profile);
+
+  //if($account->is_new) {
+    radius_user_radius_db_save($profile, $account);
+    drupal_set_message(t('User was added'));
+  //}
+
+
+
+}
+
+function radius_user_user_view($account, $view_mode, $langcode) {
+  // dpm($account);
+}
+
+function radius_user_radius_db_save($profile, $account) {
+//function radius_user_user_view($account, $view_mode, $langcode) {
+  dpm($profile);
+  dpm($account);
+  //$account = user_load($profile->uid);
+  //$profile = profile2_load_by_user($edit->uid, 'user_profile');
+
+  db_set_active('radius');
+  $result = db_select('userinfo', 'n')
+  ->fields('n')
+  ->condition('n.UserName', $account->name)
+  ->execute()
+  ->fetchObject();
+  db_set_active('default');
+  dpm($result);
+
+  if (!empty($result)) {
+    drupal_set_message(t('Пользователь '.$account->name.' существует в базе радиуса'));
+  }
+  else {
+    db_set_active('radius');
+    try {
+      $id = db_insert('userinfo')
+      ->fields(array(
+        'UserName' => $account->name,
+        'Name' => $profile->profile_name['und'][0]['value'],
+        'Mail' => $account->mail,
+        'Mobile' => $profile->profile_phone['und'][0]['value'],
+        'add_date' => date('Y-m-d H:i:s'),
+        'blocked' => $profile->profile_active['und'][0]['value'],
+        'note' => $profile->profile_comment['und'][0]['value'],
+      ))
+      ->execute();
+      $id = db_insert('radcheck')
+      ->fields(array(
+        'username' => $account->name,
+        'attribute' => 'Cleartext-Password',
+        'op' => ':=',
+        'value' => $profile->profile_password['und'][0]['value'],
+      ))
+      ->execute();
+    }
+    catch (PDOException $e) {
+      drupal_set_message(t('Error: %message', array('%message' => $e->getMessage())), 'error');
+    }
+    db_set_active('default');
+  }
+
+}
+
+//////////////////////////////////////////
+/// Add Views Bulk Operation "Mass Block"
+//////////////////////////////////////////
+
+function radius_user_action_info() {
+  return array(
+    'radius_user_block_user' => array(
+      'type' => 'user',
+      'label' => t('Block/Activate Selected User'),
+      'behavior' => array('changes_property'),
+      'configurable' => FALSE,
+      'vbo_configurable' => TRUE,
+      'triggers' => array('any'),
+    ),
+  );
+}
+
+function radius_user_block_user_form() {
+  $form = array();
+  $form['active'] = array(
+    '#type' => 'select',
+    '#title' => t('Active/Blocked'),
+    '#options' => array(
+      '0' => t('Block'),
+      '1' => t('Active'),
+    ),
+    '#required' => TRUE,
+    '#default_value' => 1,
+  );
+
+  return $form;
+}
+
+function radius_user_block_user_submit($form, &$form_state) {
+  return array(
+    'status_value' => $form_state['values']['active'],
+  );
+}
+
+function radius_user_block_user($entity, $context) {
+
+  // Обновляем значение статуса в локальной базе
+  $profile = profile2_load_by_user($context['user']->uid, 'user_profile');
+  if(empty($profile)) {
+    $profile = profile2_create(array(
+      'type' => 'user_profile',
+      'uid' => $context['user']->uid,
+    ));
+  }
+  $profile->profile_active['und'][0]['value'] = $context['status_value'];
+  profile2_save($profile);
+
+  // Обновляем значение статуса в базе радиуса
+  db_set_active('radius');
+  $id = db_update('userinfo')
+    ->fields(array(
+      'blocked' => $context['status_value'],
+    ))
+    ->condition('UserName', $context['user']->name)
+    ->execute();
+  db_set_active('default');
+
+  drupal_set_message('Статус пользователя '.$context['user']->name.' изменён');
+}
+

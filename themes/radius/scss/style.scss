@@ -1,0 +1,40 @@
+// Default variables.
+@import 'default-variables';
+
+// Bootstrap Framework.
+@import '../bootstrap/assets/stylesheets/bootstrap';
+
+// Base-theme overrides.
+@import 'overrides';
+
+#red_circle {
+  background-color: #ff0000;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  //margin: 0 auto;
+  margin-top: 4px;
+  display: table;
+}
+#green_circle {
+  background-color: #189e11;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  //margin: 0 auto;
+  margin-top: 4px;
+  display: table;
+}
+
+.view-display-user {
+  .panel-primary {
+    span.text-danger {
+      width: 45%;
+      float: right;
+    }
+  }
+}
+
+.panel-body__marginleft10 {
+  margin-left: 10px;
+}

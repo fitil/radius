@@ -1,0 +1,196 @@
+<?php
+
+function radius_user_install() {
+  if (!drupal_installation_attempted()) {
+    $type = entity_create('profile2_type', array(
+      'type' => 'user_profile',
+      'label' => st('User profile'),
+      'weight' => 0,
+      'data' => array('registration' => TRUE, 'use_page' => TRUE),
+    ));
+    $type->save();
+
+    foreach (_radius_user_installed_fields() as $field) {
+      field_create_field($field);
+    }
+
+    foreach (_radius_user_installed_instances() as $instance) {
+      $instance['entity_type'] = 'profile2';
+      $instance['bundle'] = 'user_profile';
+      field_create_instance($instance);
+    }
+  }
+}
+
+function radius_user_uninstall() {
+  foreach (_radius_user_installed_fields() as $field) {
+      field_delete_field($field);
+  }
+  $type = profile2_type_load('user_profile');
+  profile2_type_delete($type);
+
+  field_purge_batch(9999999);
+}
+
+function _radius_user_installed_instances() {
+  $instances = array(
+    'profile_agreement' => array(
+      'field_name' => 'profile_agreement',
+      'label' => t('Agreement'),
+      'description' => t('Specify User agreement number.'),
+      'widget' => array(
+        'type' => 'text_textfield',
+        'weight' => 0,
+      ),
+    ),
+    'profile_password' => array(
+      'field_name' => 'profile_password',
+      'label' => t('User password'),
+      'description' => t('Specify User password.'),
+      'widget' => array(
+        'type' => 'text_textfield',
+        'weight' => 0,
+      ),
+    ),
+    'profile_name' => array(
+      'field_name' => 'profile_name',
+      'label' => t('User name'),
+      'description' => t('Specify User name.'),
+      'widget' => array(
+        'type' => 'text_textfield',
+        'weight' => 0,
+      ),
+    ),
+    'profile_email' => array(
+      'field_name' => 'profile_email',
+      'label' => t('User E-mail'),
+      'description' => t('Specify User e-mail.'),
+      'widget' => array(
+        'type' => 'text_textfield',
+        'weight' => 0,
+      ),
+    ),
+    'profile_phone' => array(
+      'field_name' => 'profile_phone',
+      'label' => t('User phone'),
+      'description' => t('Specify User phone.'),
+      'widget' => array(
+        'type' => 'text_textfield',
+        'weight' => 0,
+      ),
+    ),
+    'profile_adress' => array(
+      'field_name' => 'profile_adress',
+      'label' => t('User adress'),
+      'description' => t('Specify User adress.'),
+      'widget' => array(
+        'type' => 'text_textfield',
+        'weight' => 0,
+      ),
+    ),
+    'profile_comment' => array(
+      'field_name' => 'profile_comment',
+      'label' => t('User comment'),
+      'description' => t('Comment.'),
+      'widget' => array(
+        'type' => 'text_textarea',
+        'settings' => array(
+          'rows' => 5
+        ),
+      ),
+    ),
+    'profile_active' => array(
+      'field_name' => 'profile_active',
+      'label' => t('Active/Blocked'),
+      'description' => t('Specify Active/Blocked User profile.'),
+      'widget' => array(
+        'type' => 'options_onoff',
+      ),
+    ),
+    'profile_payment_method' => array(
+      'field_name' => 'profile_payment_method',
+      'label' => t('User payment method'),
+      'description' => t('Select User payment method'),
+      'widget' => array(
+        'type' => 'options_select',
+      ),
+    ),
+  );
+  return $instances;
+}
+
+function _radius_user_installed_fields() {
+  $fields = array(
+    'profile_agreement' => array(
+      'field_name' => 'profile_agreement',
+      'type' => 'text',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ),
+    'profile_password' => array(
+      'field_name' => 'profile_password',
+      'type' => 'text',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ),
+    'profile_name' => array(
+      'field_name' => 'profile_name',
+      'type' => 'text',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ),
+    'profile_email' => array(
+      'field_name' => 'profile_email',
+      'type' => 'text',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ),
+    'profile_phone' => array(
+      'field_name' => 'profile_phone',
+      'type' => 'text',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ),
+    'profile_adress' => array(
+      'field_name' => 'profile_adress',
+      'type' => 'text',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ),
+    'profile_comment' => array(
+      'field_name' => 'profile_comment',
+      'type' => 'text',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+    ),
+    'profile_active' => array(
+      'field_name' => 'profile_active',
+      'type' => 'list_boolean',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+      'settings' => array(
+        'allowed_values' => array(
+          'Blocked',
+          'Active',
+        ),
+        'allowed_values_function' => '',
+        'default'
+      ),
+    ),
+    'profile_payment_method' => array(
+      'field_name' => 'profile_payment_method',
+      'type' => 'list_text',
+      'cardinality' => 1,
+      'translatable' => FALSE,
+      'settings' => array(
+        'allowed_values' => array(
+          'Cashless payments.',
+          'Cash',
+        ),
+        'allowed_values_function' => '',
+      ),
+    ),
+  );
+  return $fields;
+}
+

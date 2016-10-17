@@ -1,0 +1,25 @@
+/*
+Errno::ENOENT: No such file or directory - sass
+
+Backtrace:
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/plugin/compiler.rb:484:in `read'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/plugin/compiler.rb:484:in `update_stylesheet'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/plugin/compiler.rb:215:in `block in update_stylesheets'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/plugin/compiler.rb:209:in `each'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/plugin/compiler.rb:209:in `update_stylesheets'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/plugin/compiler.rb:294:in `watch'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/plugin.rb:109:in `method_missing'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/exec/sass_scss.rb:360:in `watch_or_update'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/exec/sass_scss.rb:51:in `process_result'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/exec/base.rb:52:in `parse'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/lib/sass/exec/base.rb:19:in `parse!'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/gems/sass-3.4.22/bin/sass:13:in `<top (required)>'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/bin/sass:23:in `load'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/bin/sass:23:in `<main>'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/bin/ruby_executable_hooks:15:in `eval'
+/home/fitil/.rvm/gems/ruby-2.0.0-p648/bin/ruby_executable_hooks:15:in `<main>'
+*/
+body:before {
+  white-space: pre;
+  font-family: monospace;
+  content: "Errno::ENOENT: No such file or directory - sass"; }

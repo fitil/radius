@@ -1,0 +1,104 @@
+<?php
+
+function radius_menu() {
+  $items = array();
+  $items ['radius/user/add'] = array(
+    'title' => t('Add User'),
+    'description' => 'Add User Form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('radius_add_form'),
+    'access callback' => TRUE
+    );
+  return $items;
+}
+
+
+function radius_add_form($form, $form_state) {
+
+  $form = array();
+  $form['agreement'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Agreement'),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#required' => TRUE,
+    );
+  $form['radius_login'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Login'),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#required' => TRUE,
+    '#attributes' => array('autocomplete' => 'off'),
+    );
+  $form['radius_password'] = array(
+    '#type' => 'password_confirm',
+    '#size' => 15,
+    );
+
+  $form['user'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User Info'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="radius_login"]' => array('empty' => false),
+        ),
+      ),
+    );
+  $form['user']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Name'),
+    '#size' => 100,
+    '#maxlength' => 100,
+    );
+  $form['user']['email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User EMail'),
+    );
+  $form['user']['phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Phone'),
+    '#size' => 100,
+    '#maxlength' => 100,
+    );
+  $form['user']['address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Address'),
+    '#size' => 100,
+    '#maxlength' => 100,
+    );
+  $form['user']['comment'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Comment'),
+    );
+
+  $form['active'] = array(
+    '#type' => 'select',
+    '#title' => t('Active'),
+    '#options' => array(
+        0 => t('No'),
+        1 => t('Yes'),
+      ),
+    '#default_value' => 1,
+    );
+
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    );
+
+  return $form;
+}
+
+function radius_form_alter (&$form, &$form_state, $form_id) {
+  dpm($form);
+}
+
+
+function radius_add_form_submit ($form, &$form_state) {
+  drupal_set_message(t('User was added'));
+}
+

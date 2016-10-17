@@ -1,0 +1,7 @@
+name = Radius User Entity
+description = Provide a custom Radius User Entity for tracking and displaying users activity.
+core = 7.x
+package = Fitil
+dependencies[] = entity
+dependencies[] = profile2
+dependencies[] = list

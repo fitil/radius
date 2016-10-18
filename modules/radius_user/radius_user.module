@@ -233,8 +233,8 @@ function radius_user_user_view($account, $view_mode, $langcode) {
 
 function radius_user_radius_db_save($profile, $account) {
 //function radius_user_user_view($account, $view_mode, $langcode) {
-  dpm($profile);
-  dpm($account);
+  //dpm($profile);
+  //dpm($account);
   //$account = user_load($profile->uid);
   //$profile = profile2_load_by_user($edit->uid, 'user_profile');
 
@@ -245,7 +245,7 @@ function radius_user_radius_db_save($profile, $account) {
   ->execute()
   ->fetchObject();
   db_set_active('default');
-  dpm($result);
+  //dpm($result);
 
   if (!empty($result)) {
     drupal_set_message(t('Пользователь '.$account->name.' существует в базе радиуса'));
@@ -346,3 +346,15 @@ function radius_user_block_user($entity, $context) {
   drupal_set_message('Статус пользователя '.$context['user']->name.' изменён');
 }
 
+////////////////////////////////////////
+//Удаление пользователя из базы радиуса
+////////////////////////////////////////
+
+function radius_user_user_delete($account) {
+  drupal_set_message('test for user delete');
+  db_set_active('radius');
+    $id = db_delete('radcheck')
+      ->condition('username', $account->name)
+      ->execute();
+  db_set_active('default');
+}

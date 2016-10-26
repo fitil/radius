@@ -99,6 +99,11 @@ class views_handler_field_date extends views_handler_field {
 
   function render($values) {
     $value = $this->get_value($values);
+
+    if (!is_numeric($value)) {
+      $value = strtotime($value);
+    }
+
     $format = $this->options['date_format'];
     if (in_array($format, array('custom', 'raw time ago', 'time ago', 'today time ago', 'raw time hence', 'time hence', 'raw time span', 'time span', 'raw time span', 'inverse time span', 'time span'))) {
       $custom_format = $this->options['custom_date_format'];

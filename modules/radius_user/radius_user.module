@@ -24,34 +24,39 @@ function radius_user_menu() {
 }
 
 function radius_user_synchronization() {
+  //drupal_set_message('Читаем базу radcheck');
   db_set_active('radius');
-  $result_user = db_select('userinfo', 'n')
+  $result = db_select('radcheck', 'n')
   ->fields('n')
   ->execute()
   ->fetchAll();
   db_set_active('default');
+  //dpm($result);
 
-  foreach ($result_user as $record) {
-    if (empty(user_load_by_name($record->UserName))) {
+  //drupal_set_message('Ready');
+  foreach ($result as $record) {
+
+    if (empty(user_load_by_name($record->username))) {
+      drupal_set_message('Added user:'.$record->username);
       dpm($record);
-      db_set_active('radius');
-      $result_pass = db_select('radcheck', 'r')
-        ->fields('r')
-        ->condition('r.username', $record->UserName)
-        ->execute()
-        ->fetchObject();
-      dpm($result_pass);
-      db_set_active('default');
+      // db_set_active('radius');
+      // $result_pass = db_select('radcheck', 'r')
+      //   ->fields('r')
+      //   ->condition('r.username', $record->UserName)
+      //   ->execute()
+      //   ->fetchObject();
+      // dpm($result_pass);
+      // db_set_active('default');
       /////////////////////////////////////////////////////
       ///Добавляем пользователей из радиуса в базу Drupal
       /////////////////////////////////////////////////////
       $fields = array(
-        'name' => $record->UserName,
-        'mail' => $record->Mail,
-        'pass' => $result_pass->value,
+        'name' => $record->username,
+        'mail' => 'test@test.com',
+        'pass' => $record->value,
 
         'status' => 1,
-        'init' => $record->Mail,
+        'init' => 'test@test.com',
         'roles' => array(
           DRUPAL_AUTHENTICATED_RID => 'authenticated user',
           3 => 'Radius User',
@@ -67,11 +72,11 @@ function radius_user_synchronization() {
         ));
       }
 
-      $profile->profile_password['und'][0]['value'] = $result_pass->value;
-      $profile->profile_name['und'][0]['value'] = $record->Name;
-      $profile->profile_email['und'][0]['value'] = $record->Mail;
-      $profile->profile_phone['und'][0]['value'] = $record->WorkPhone;
-      $profile->profile_comment['und'][0]['value'] = $record->note;
+      $profile->profile_password['und'][0]['value'] = $record->value;
+      $profile->profile_name['und'][0]['value'] = $record->username;
+      $profile->profile_email['und'][0]['value'] = 'test@test.com';
+      $profile->profile_phone['und'][0]['value'] = 0;
+      $profile->profile_comment['und'][0]['value'] = '';
       $profile->profile_payment_method['und'][0]['value'] = 1;
       $profile->field_balance['und'][0]['value'] = 2;
       $profile->field_off_threshold['und'][0]['value'] = 0;
@@ -79,6 +84,24 @@ function radius_user_synchronization() {
       $profile->field__last_withdrawal['und'][0]['value'] = date('Y-m-d H:i:s');
       profile2_save($profile);
 
+    } else {
+
+      $account = user_load_by_name($record->username);
+      $edit['pass'] = $record->value;
+      user_save($account, $edit);
+
+      $profile = profile2_load_by_user($account->uid, 'user_profile');
+      if (empty($profile)) {
+        $profile = profile2_create(array(
+          'type' => 'user_profile',
+          'uid' => $account->uid,
+        ));
+      }
+
+      $profile->profile_password['und'][0]['value'] = $record->value;
+
+      profile2_save($profile);
+      drupal_set_message('Changed password on user:'.$record->username);
     }
   }
 }
